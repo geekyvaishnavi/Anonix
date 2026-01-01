@@ -10,6 +10,8 @@ import Register from "./pages/Register";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Profile from "./pages/Profile";
+import Dashboard from "./pages/Dashboard";
+import AnswerMessage from "./pages/AnswerMessage";
 
 export default function App() {
   return (
@@ -24,7 +26,9 @@ export default function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/user/profile" element={<Profile />} />
+        <Route path="/user/profile/edit" element={<Profile />} />
+        <Route path="/user/dashboard" element={<Dashboard />} />
+        <Route path="/ans" element={<AnswerMessage />} />
       </Routes>
     </>
   );
