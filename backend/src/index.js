@@ -4,11 +4,17 @@ import { authRoutes } from './routes/auth.js'
 import { messageRoutes } from './routes/messages.js'
 import { replyRoutes } from './routes/replies.js'
 import { profileRoutes } from './routes/profile.js'
+import { authPlugin } from './plugins/auth.js'
 
 const app = new Elysia()
+
+    .use(authPlugin) // Now ALL routes below have access to 'user' and 'jwt'
+    
     // 1. Setup Middlewares
     .use(cors({
-    origin: 'http://localhost:5173' 
+        origin: 'http://localhost:5173', // Your React dev URL
+        credentials: true,               // Essential for Cookies/JWT
+        allowedHeaders: ['Content-Type', 'Authorization']
     }))
 
     // 2. Health Check (To see if server is alive)

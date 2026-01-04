@@ -1,107 +1,128 @@
+import { useState } from "react"; // Added
+import { useNavigate, Link } from "react-router-dom"; // Added useNavigate
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { Link } from "react-router-dom";
+import { apiRequest } from "../utils/api"; // Ensure the path is correct
 
 export default function Register() {
+  // 1. State for form fields
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  // 2. Handle Form Submission
+  const handleRegister = async (e) => {
+  e.preventDefault();
+  setError("");
+
+  if (password !== confirmPassword) {
+    setError("Passwords do not match!");
+    return;
+  }
+
+  try {
+    // We "fake" the email since Supabase needs it, but your UI doesn't have it
+    const dummyEmail = `${username}@anonix.com`; 
+
+    const data = await apiRequest("/auth/register", { // Corrected Path
+      method: "POST",
+      body: JSON.stringify({ 
+        email: dummyEmail, // Send the dummy email
+        username, 
+        password 
+      }),
+    });
+
+    if (data && data.message === "Account created!") {
+      alert("Registration successful!");
+      navigate("/login");
+    } else {
+      setError(data?.error || "Registration failed");
+    }
+  } catch (err) {
+    setError("Server connection failed. Check your BASE_URL port.");
+  }
+};
+
   return (
     <>
       <Navbar />
 
       <section className="min-h-screen bg-[#050505] flex items-center justify-center px-6 pt-20">
         <div className="relative w-full max-w-sm">
-
-          {/* Card */}
           <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
-
-            {/* Heading */}
             <div className="mb-6 text-center">
-              <h1 className="text-2xl font-semibold text-white mb-2">
-                Create Account
-              </h1>
-              <p className="text-sm text-gray-400">
-                Join ANONIX to receive anonymous messages
-              </p>
+              <h1 className="text-2xl font-semibold text-white mb-2">Create Account</h1>
+              <p className="text-sm text-gray-400">Join ANONIX to receive anonymous messages</p>
+              {/* Error Message Display */}
+              {error && <p className="text-red-500 text-xs mt-2 font-medium">{error}</p>}
             </div>
 
-            {/* Form */}
-            <form className="space-y-4">
-
-              {/* Username */}
+            {/* 3. Added onSubmit handler */}
+            <form className="space-y-4" onSubmit={handleRegister}>
               <div>
                 <label className="block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">
                   Username
                 </label>
                 <input
                   type="text"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   placeholder="your_username"
-                  autoComplete="username"
-                  className="w-full bg-black/60 border border-white/10
-                    rounded-lg px-4 py-2.5 text-white placeholder-gray-500
-                    focus:outline-none focus:border-[#f59e0b] transition"
+                  className="w-full bg-black/60 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#f59e0b] transition"
                 />
               </div>
 
-              {/* Password */}
               <div>
                 <label className="block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">
                   Password
                 </label>
                 <input
                   type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  autoComplete="new-password"
-                  className="w-full bg-black/60 border border-white/10
-                    rounded-lg px-4 py-2.5 text-white placeholder-gray-500
-                    focus:outline-none focus:border-[#f59e0b] transition"
+                  className="w-full bg-black/60 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#f59e0b] transition"
                 />
               </div>
 
-              {/* Confirm Password */}
               <div>
                 <label className="block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">
                   Confirm Password
                 </label>
                 <input
                   type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  autoComplete="new-password"
-                  className="w-full bg-black/60 border border-white/10
-                    rounded-lg px-4 py-2.5 text-white placeholder-gray-500
-                    focus:outline-none focus:border-[#f59e0b] transition"
+                  className="w-full bg-black/60 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#f59e0b] transition"
                 />
               </div>
 
-              {/* Button */}
               <button
                 type="submit"
-                className="w-full mt-3 py-2.5 rounded-full
-                  bg-[#f59e0b] text-black font-semibold tracking-wide
-                  hover:brightness-110 transition shadow-lg shadow-[#f59e0b]/20"
+                className="w-full mt-3 py-2.5 rounded-full bg-[#f59e0b] text-black font-semibold tracking-wide hover:brightness-110 transition shadow-lg shadow-[#f59e0b]/20"
               >
                 Register
               </button>
             </form>
 
-            {/* Footer text */}
             <p className="mt-6 text-sm text-gray-500 text-center">
               Already have an account?{" "}
-              <Link
-                to="/login"
-                className="text-[#f59e0b] hover:underline"
-              >
+              <Link to="/login" className="text-[#f59e0b] hover:underline">
                 Login
               </Link>
             </p>
           </div>
 
-          {/* Subtle glow */}
           <div className="absolute inset-0 -z-10">
-            <div className="absolute top-1/2 left-1/2
-              -translate-x-1/2 -translate-y-1/2
-              w-[360px] h-[260px]
-              bg-[#f59e0b]/10 blur-[120px]" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] h-[260px] bg-[#f59e0b]/10 blur-[120px]" />
           </div>
-
         </div>
       </section>
 

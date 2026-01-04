@@ -1,8 +1,41 @@
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { useState } from "react";
+import { apiRequest } from "../utils/api";
 
 export default function Login() {
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      // 1. Fetch the /auth/login route using your helper
+      const data = await apiRequest("/login", {
+        method: "POST",
+        body: JSON.stringify({ username, password }),
+      });
+
+      // 2. Save the Session
+      if (data && data.token) {
+        localStorage.setItem("jwt_token", data.token);
+        
+        // 3. Redirect to Dashboard
+        navigate("/dashboard");
+      } else {
+        setError(data?.message || "Invalid credentials");
+      }
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -62,6 +95,7 @@ export default function Login() {
                 className="w-full mt-3 py-2.5 rounded-full
                   bg-[#f59e0b] text-black font-semibold tracking-wide
                   hover:brightness-110 transition shadow-lg shadow-[#f59e0b]/20"
+                onSubmit={handleLogin}
               >
                 Login
               </button>

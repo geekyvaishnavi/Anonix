@@ -12,6 +12,7 @@ import Contact from "./pages/Contact";
 import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
 import AnswerMessage from "./pages/AnswerMessage";
+import PublicProfile from "./pages/PublicProfile";
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/user/profile/edit" element={<Profile />} />
         <Route path="/user/dashboard" element={<Dashboard />} />
         <Route path="/ans" element={<AnswerMessage />} />
+        <Route path="/publicprofile" element={<PublicProfile />} />
       </Routes>
     </>
   );
