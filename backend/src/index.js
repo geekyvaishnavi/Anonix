@@ -4,6 +4,7 @@ import { authRoutes } from './routes/auth.js'
 import { messageRoutes } from './routes/messages.js'
 import { replyRoutes } from './routes/replies.js'
 import { profileRoutes } from './routes/profile.js'
+import { dashboardRoutes } from './routes/dashboard.js'
 import { authPlugin } from './plugins/auth.js'
 
 const app = new Elysia()
@@ -24,11 +25,14 @@ const app = new Elysia()
         runtime: 'Bun'
     }))
 
+    //no need to be logged in 
+    .use(messageRoutes) // Prefix: /messages-- send msgs
+    .use(profileRoutes) // Prefix: /u -- public profile
+
     // 3. Mount Modular Routes
     .use(authRoutes)    // Prefix: /auth (Login/Signup)
-    .use(messageRoutes) // Prefix: /messages (Send/Inbox)
     .use(replyRoutes)   // Prefix: /replies (Answering)
-    .use(profileRoutes) // Prefix: /u (Public Feed)
+    .use(dashboardRoutes)
 
     // 4. Global Error Handling
     .onError(({ code, error, set }) => {

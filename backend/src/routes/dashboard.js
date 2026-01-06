@@ -2,6 +2,34 @@ import { Elysia, t } from 'elysia'
 import { supabase } from '../db/supabase.js'
 
 export const dashboardRoutes = new Elysia({ prefix: '/dashboard' })
+   // user data
+  .get('/me', async ({ request, set }) => {
+    const authHeader = request.headers.get('Authorization')
+    const token = authHeader?.split(' ')[1]
+
+    // 1. Get user from Supabase Auth
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    
+    if (authError || !user) {
+      set.status = 401
+      return { error: "Unauthorized" }
+    }
+
+    // 2. Fetch the actual profile data (display_name, username) from your profiles table
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles') // or whatever your table name is
+      .select('username, display_name')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError) {
+      set.status = 404
+      return { error: "Profile not found" }
+    }
+
+    return profile
+  })
+
   // 1. Get Private Inbox 
   .get('/inbox', async ({ request, set }) => {
     const authHeader = request.headers.get('Authorization')

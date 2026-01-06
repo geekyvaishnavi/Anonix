@@ -19,7 +19,11 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
             return { error: error.message }
         }
 
-        return { message: "Account created!", user: data.user }
+        return { 
+    message: "Account created!", 
+    token: data.session?.access_token, 
+    user: data.user 
+}
     }, {
         body: t.Object({
             email: t.String(),
@@ -56,7 +60,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
         const token = authHeader.replace('Bearer ', '')
 
         // This tells Supabase to invalidate the current session
-        const { error } = await supabase.auth.admin.signOut(token)
+        const { error } = await supabase.auth.signOut()
 
         if (error) {
             set.status = 400
