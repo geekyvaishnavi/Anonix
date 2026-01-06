@@ -1,50 +1,57 @@
-import { useState } from "react"; // Added
-import { useNavigate, Link } from "react-router-dom"; // Added useNavigate
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { apiRequest } from "../utils/api"; // Ensure the path is correct
+import { apiRequest } from "../utils/api";
+import { useAuth } from "../context/authContext"; // 1. Import the Auth Hook
 
 export default function Register() {
-  // 1. State for form fields
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  
   const navigate = useNavigate();
+  const { login } = useAuth(); // 2. Initialize the login function
 
-  // 2. Handle Form Submission
   const handleRegister = async (e) => {
-  e.preventDefault();
-  setError("");
+    e.preventDefault();
+    setError("");
 
-  if (password !== confirmPassword) {
-    setError("Passwords do not match!");
-    return;
-  }
-
-  try {
-    // We "fake" the email since Supabase needs it, but your UI doesn't have it
-    const dummyEmail = `${username}@anonix.com`; 
-
-    const data = await apiRequest("/auth/register", { // Corrected Path
-      method: "POST",
-      body: JSON.stringify({ 
-        email: dummyEmail, // Send the dummy email
-        username, 
-        password 
-      }),
-    });
-
-    if (data && data.message === "Account created!") {
-      alert("Registration successful!");
-      navigate("/login");
-    } else {
-      setError(data?.error || "Registration failed");
+    if (password !== confirmPassword) {
+      setError("Passwords do not match!");
+      return;
     }
-  } catch (err) {
-    setError("Server connection failed. Check your BASE_URL port.");
-  }
-};
+
+    try {
+      const dummyEmail = `${username}@anonix.com`;
+
+      const data = await apiRequest("/auth/signup", {
+        method: "POST",
+        body: JSON.stringify({
+          email: dummyEmail,
+          username,
+          password,
+        }),
+      });
+
+      if (data && data.token) {
+        // 3. Log the user in globally
+        login(data.token); 
+        
+        // 4. Smooth redirect to dashboard
+        navigate("/user/dashboard"); 
+      } else if (data && data.message === "Account created!") {
+        // Fallback if your API creates account but doesn't return token immediately
+        alert("Account created! Please login.");
+        navigate("/login");
+      } else {
+        setError(data?.error || "Registration failed");
+      }
+    } catch (err) {
+      setError("Server connection failed. Please try again later.");
+    }
+  };
 
   return (
     <>
@@ -54,13 +61,21 @@ export default function Register() {
         <div className="relative w-full max-w-sm">
           <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
             <div className="mb-6 text-center">
-              <h1 className="text-2xl font-semibold text-white mb-2">Create Account</h1>
-              <p className="text-sm text-gray-400">Join ANONIX to receive anonymous messages</p>
+              <h1 className="text-2xl font-semibold text-white mb-2">
+                Create Account
+              </h1>
+              <p className="text-sm text-gray-400">
+                Join ANONIX to receive anonymous messages
+              </p>
+              
               {/* Error Message Display */}
-              {error && <p className="text-red-500 text-xs mt-2 font-medium">{error}</p>}
+              {error && (
+                <div className="mt-4 p-2 bg-red-500/10 border border-red-500/50 rounded text-red-500 text-xs font-medium">
+                  {error}
+                </div>
+              )}
             </div>
 
-            {/* 3. Added onSubmit handler */}
             <form className="space-y-4" onSubmit={handleRegister}>
               <div>
                 <label className="block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">

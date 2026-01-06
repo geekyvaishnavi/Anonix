@@ -30,7 +30,7 @@ export default function App() {
         <Route path="/user/profile/edit" element={<Profile />} />
         <Route path="/user/dashboard" element={<Dashboard />} />
         <Route path="/ans" element={<AnswerMessage />} />
-        <Route path="/publicprofile" element={<PublicProfile />} />
+        <Route path="/u/:username" element={<PublicProfile />} />
       </Routes>
     </>
   );
