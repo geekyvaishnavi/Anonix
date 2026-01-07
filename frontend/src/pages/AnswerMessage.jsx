@@ -1,50 +1,86 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Send, ChevronLeft, Shield, CornerDownRight } from "lucide-react";
+import { Send, ChevronLeft, Shield, CornerDownRight, Loader2 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { apiRequest } from "../utils/api";
 
 export default function AnswerMessage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [answer, setAnswer] = useState("");
+  const [originalMessage, setOriginalMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
 
-  // In a real app, you'd fetch this by ID
-  const originalMessage =
-    "How do you manage to stay so productive every day?";
+  // 1. Fetch the actual message content when the page loads
+  useEffect(() => {
+    const fetchOriginalMessage = async () => {
+      try {
+        setIsLoading(true);
+        // Assuming your backend has an endpoint to get a single message
+        const data = await apiRequest(`/dashboard/message/${id}`);
+        if (data && data.content) {
+          setOriginalMessage(data.content);
+        } else {
+          setOriginalMessage("Message not found.");
+        }
+      } catch (error) {
+        console.error("Error fetching message:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handleSend = () => {
-    console.log("Answering message:", id, "with:", answer);
-    // Save to DB here
-    navigate("/dashboard");
-  };
+    fetchOriginalMessage();
+  }, [id]);
+
+  // 2. Handle the POST request to answer the message
+  const handleSend = async () => {
+  if (!answer.trim()) return;
+  setIsSending(true);
+
+  try {
+    // The prefix is /replies and the method is /send
+    const response = await apiRequest('/replies/send', { 
+      method: 'POST',
+      body: JSON.stringify({ 
+        message_id: id,       // Matches backend t.String()
+        reply_text: answer    // CHANGED: was answer_text, must be reply_text
+      })
+    });
+
+    if (response && response.success) {
+      navigate("/user/dashboard");
+    } else {
+      alert("Error: " + (response?.error || "Check validation"));
+    }
+  } catch (error) {
+    console.error("Request failed:", error);
+  } finally {
+    setIsSending(false);
+  }
+};
 
   return (
     <div className="min-h-screen w-full bg-[#050505] text-white font-sans flex flex-col">
       <Navbar />
 
-      {/* Background Glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-[#f59e0b]/5 rounded-full blur-[100px]" />
       </div>
 
       <main className="relative z-10 flex-grow max-w-2xl mx-auto w-full px-6 pt-24 pb-12">
-        {/* Back Navigation */}
         <button
           onClick={() => navigate(-1)}
           className="group flex items-center gap-2 text-gray-500 hover:text-[#f59e0b] transition mb-8"
         >
-          <ChevronLeft
-            size={18}
-            className="group-hover:-translate-x-1 transition-transform"
-          />
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
-            Back to Inbox
-          </span>
+          <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Back to Inbox</span>
         </button>
 
         <div className="space-y-6">
-          {/* Original Message */}
+          {/* Original Message Display */}
           <div className="bg-[#0f0f0f] border border-white/5 p-6 rounded-3xl">
             <div className="flex items-center gap-2 mb-4">
               <Shield size={14} className="text-[#f59e0b]" />
@@ -52,12 +88,17 @@ export default function AnswerMessage() {
                 Anonymous Message
               </span>
             </div>
-            <p className="text-lg sm:text-xl text-gray-200 font-light leading-relaxed">
-              "{originalMessage}"
-            </p>
+            
+            {isLoading ? (
+              <div className="animate-pulse h-6 bg-white/5 rounded w-3/4"></div>
+            ) : (
+              <p className="text-lg sm:text-xl text-gray-200 font-light leading-relaxed">
+                "{originalMessage}"
+              </p>
+            )}
           </div>
 
-          {/* Answer Input */}
+          {/* Answer Input Area */}
           <div className="relative group">
             <div className="absolute -left-3 top-0 h-full w-[2px] bg-[#f59e0b]/20 group-focus-within:bg-[#f59e0b] transition-colors" />
 
@@ -67,6 +108,7 @@ export default function AnswerMessage() {
                 autoFocus
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
+                disabled={isLoading || isSending}
                 placeholder="Write your public response..."
                 className="w-full bg-transparent border-none text-white 
                   text-base sm:text-lg font-light leading-relaxed 
@@ -79,21 +121,23 @@ export default function AnswerMessage() {
           {/* Action Bar */}
           <div className="pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-[10px] text-gray-600 uppercase tracking-widest max-w-[280px]">
-              Once you post, this answer will be visible on your public profile
-              link.
+              Once you post, this answer will be visible on your public profile link.
             </p>
 
             <button
               onClick={handleSend}
-              disabled={!answer.trim()}
+              disabled={!answer.trim() || isLoading || isSending}
               className="w-full sm:w-auto flex items-center justify-center gap-3 
                 bg-[#f59e0b] text-black px-8 py-4 rounded-2xl 
                 text-[11px] font-black uppercase tracking-widest 
                 hover:brightness-110 transition disabled:opacity-50 
                 disabled:cursor-not-allowed shadow-lg shadow-[#f59e0b]/10"
             >
-              Post Response
-              <Send size={16} />
+              {isSending ? (
+                <>Posting... <Loader2 size={16} className="animate-spin" /></>
+              ) : (
+                <>Post Response <Send size={16} /></>
+              )}
             </button>
           </div>
         </div>
