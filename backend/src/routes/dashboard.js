@@ -52,6 +52,23 @@ export const dashboardRoutes = new Elysia({ prefix: '/dashboard' })
     return error ? { error: error.message } : data
   })
 
+
+  // Get a single message for the Answer page
+  .get('/message/:id', async ({ params, set }) => {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('id', params.id)
+      .single()
+
+    if (error || !data) {
+      set.status = 404
+      return { error: "Message not found" }
+    }
+
+    return data
+  })
+
   // 2. Update Status (Archive/Unarchive)
   .patch('/message/:id/status', async ({ params, body }) => {
     const { error } = await supabase
