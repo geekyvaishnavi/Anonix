@@ -13,11 +13,17 @@ export default function Navbar() {
     navigate("/login");
   };
 
+  // 1. Define links and their visibility rules
   const navLinks = [
-    { name: 'Home', href: '/' },
-    { name: 'About Us', href: '/about' },
-    { name: 'Contact Us', href: '/contact' },
+    { name: 'Home', href: '/', show: !isLoggedIn }, // Only show if NOT logged in
+    { name: 'About Us', href: '/about', show: true },
+    { name: 'Contact Us', href: '/contact', show: true },
+    { name: 'Dashboard', href: '/user/dashboard', show: isLoggedIn }, // Only show if logged in
+    { name: 'Register', href: '/register', show: !isLoggedIn },  // Only show if NOT logged in
   ];
+
+  // 2. Filter the links based on current auth state
+  const visibleLinks = navLinks.filter(link => link.show);
 
   return (
     <nav className="fixed top-0 w-full h-16 z-[100] bg-black/50 backdrop-blur-xl border-b border-white/5">
@@ -31,25 +37,13 @@ export default function Navbar() {
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-10">
           <div className="flex items-center gap-10">
-            {navLinks.map((link) => (
+            {/* Map over filtered visibleLinks */}
+            {visibleLinks.map((link) => (
               <Link key={link.name} to={link.href} className="relative text-[11px] font-medium uppercase tracking-[0.18em] text-gray-400 hover:text-white transition group">
                 {link.name}
                 <span className="absolute left-0 -bottom-1 w-0 h-[1px] bg-[#f59e0b] transition-all duration-300 group-hover:w-full" />
               </Link>
             ))}
-
-            {/* Dynamic Link: Register or Dashboard */}
-            {isLoggedIn ? (
-              <Link to="/dashboard" className="relative text-[11px] font-medium uppercase tracking-[0.18em] text-gray-400 hover:text-white transition group">
-                Dashboard
-                <span className="absolute left-0 -bottom-1 w-0 h-[1px] bg-[#f59e0b] transition-all duration-300 group-hover:w-full" />
-              </Link>
-            ) : (
-              <Link to="/register" className="relative text-[11px] font-medium uppercase tracking-[0.18em] text-gray-400 hover:text-white transition group">
-                Register
-                <span className="absolute left-0 -bottom-1 w-0 h-[1px] bg-[#f59e0b] transition-all duration-300 group-hover:w-full" />
-              </Link>
-            )}
           </div>
 
           {/* Auth Button: Login or Logout */}
@@ -84,7 +78,8 @@ export default function Navbar() {
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-16 left-0 w-full bg-[#050505] border-b border-white/10 flex flex-col p-6 space-y-6 backdrop-blur-3xl">
-          {navLinks.map((link) => (
+          {/* Use visibleLinks here too for consistency */}
+          {visibleLinks.map((link) => (
             <Link 
               key={link.name} 
               to={link.href} 
@@ -96,38 +91,20 @@ export default function Navbar() {
           ))}
           
           {isLoggedIn ? (
-            <>
-              <Link 
-                to="/dashboard" 
-                onClick={() => setIsMobileMenuOpen(false)} 
-                className="text-xs font-medium uppercase tracking-widest text-gray-400"
-              >
-                Dashboard
-              </Link>
-              <button 
-                onClick={handleLogout} 
-                className="text-left text-xs font-semibold uppercase tracking-widest text-red-500"
-              >
-                Logout
-              </button>
-            </>
+            <button 
+              onClick={handleLogout} 
+              className="text-left text-xs font-semibold uppercase tracking-widest text-red-500"
+            >
+              Logout
+            </button>
           ) : (
-            <>
-              <Link 
-                to="/register" 
-                onClick={() => setIsMobileMenuOpen(false)} 
-                className="text-xs font-medium uppercase tracking-widest text-gray-400"
-              >
-                Register
-              </Link>
-              <Link 
-                to="/login" 
-                onClick={() => setIsMobileMenuOpen(false)} 
-                className="text-xs font-semibold uppercase tracking-widest text-[#f59e0b]"
-              >
-                Login
-              </Link>
-            </>
+            <Link 
+              to="/login" 
+              onClick={() => setIsMobileMenuOpen(false)} 
+              className="text-xs font-semibold uppercase tracking-widest text-[#f59e0b]"
+            >
+              Login
+            </Link>
           )}
         </div>
       )}
