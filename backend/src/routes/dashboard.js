@@ -31,6 +31,7 @@ export const dashboardRoutes = new Elysia({ prefix: '/dashboard' })
   })
 
   // 1. Get Private Inbox 
+ // 1. Get Private Inbox (Corrected with Joins)
   .get('/inbox', async ({ request, set }) => {
     const authHeader = request.headers.get('Authorization')
     const token = authHeader?.split(' ')[1]
@@ -42,32 +43,49 @@ export const dashboardRoutes = new Elysia({ prefix: '/dashboard' })
       return { error: "Unauthorized" }
     }
 
-    // Fetch Messages
+    // Fetch Messages joined with their replies
     const { data, error } = await supabase
       .from('messages')
-      .select('*')
+      .select(`
+        *,
+        replies (
+          reply_text,
+          created_at
+        )
+      `) // The magic happens here: fetching the linked reply data
       .eq('recipient_id', user.id)
       .order('created_at', { ascending: false })
 
-    return error ? { error: error.message } : data
-  })
-
-
-  // Get a single message for the Answer page
-  .get('/message/:id', async ({ params, set }) => {
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('id', params.id)
-      .single()
-
-    if (error || !data) {
-      set.status = 404
-      return { error: "Message not found" }
+    if (error) {
+      set.status = 400
+      return { error: error.message }
     }
 
     return data
   })
+
+  // Get a single message for the Answer page
+  // Get a single message for the Answer page
+.get('/message/:id', async ({ params, set }) => {
+  const { data, error } = await supabase
+    .from('messages')
+    .select(`
+      *,
+      replies (
+        reply_text,
+        created_at
+      )
+    `) // ADD THIS to see the reply on the answer page too
+    .eq('id', params.id)
+    .single()
+
+  if (error || !data) {
+    set.status = 404
+    return { error: "Message not found" }
+  }
+
+  return data
+})
 
   // 2. Update Status (Archive/Unarchive)
   .patch('/message/:id/status', async ({ params, body }) => {
