@@ -15,7 +15,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { apiRequest } from "../utils/api";
-import { useAuth } from "../context/authContext"; // 1. Import Auth Context
+import { useAuth } from "../context/authContext";
 
 export default function Dashboard() {
   const [messages, setMessages] = useState([]);
@@ -24,16 +24,12 @@ export default function Dashboard() {
   const [filter, setFilter] = useState("active");
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
-
-  // 2. Use logout from Context to keep Navbar in sync
   const { logout } = useAuth();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setIsLoading(true);
-
-        // 3. FIX: Match the token key used in AuthContext/Login
         const token = localStorage.getItem("jwt_token");
         if (!token) {
           navigate("/login");
@@ -67,7 +63,7 @@ export default function Dashboard() {
   }, [navigate]);
 
   const handleLogout = () => {
-    logout(); // 4. Use the Context logout (clears storage + updates Navbar)
+    logout();
     navigate("/login");
   };
 
@@ -78,13 +74,10 @@ export default function Dashboard() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // ... (Keep handleStatusUpdate and handleDelete exactly as they were) ...
   const handleStatusUpdate = async (id, newStatus) => {
     try {
       const previousMessages = [...messages];
-      setMessages(
-        messages.map((m) => (m.id === id ? { ...m, status: newStatus } : m))
-      );
+      setMessages(messages.map((m) => (m.id === id ? { ...m, status: newStatus } : m)));
       const response = await apiRequest(`/dashboard/message/${id}/status`, {
         method: "PATCH",
         body: JSON.stringify({ status: newStatus }),
@@ -111,11 +104,7 @@ export default function Dashboard() {
   const filteredMessages = messages.filter((m) => m.status === filter);
   const formatTime = (dateString) => {
     const date = new Date(dateString);
-    return (
-      date.toLocaleDateString() +
-      " " +
-      date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    );
+    return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -142,9 +131,7 @@ export default function Dashboard() {
               </Link>
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">
-                {user.name}
-              </h2>
+              <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">{user.name}</h2>
               <p className="text-gray-500 text-sm italic">@{user.username}</p>
             </div>
           </div>
@@ -184,9 +171,7 @@ export default function Dashboard() {
               key={tab}
               onClick={() => setFilter(tab)}
               className={`pb-3 text-xs font-bold uppercase tracking-widest transition-all relative whitespace-nowrap ${
-                filter === tab
-                  ? "text-[#f59e0b]"
-                  : "text-gray-600 hover:text-gray-400"
+                filter === tab ? "text-[#f59e0b]" : "text-gray-600 hover:text-gray-400"
               }`}
             >
               {tab}
@@ -202,9 +187,7 @@ export default function Dashboard() {
           {isLoading ? (
             <div className="text-center py-20">
               <div className="animate-spin inline-block w-6 h-6 border-[3px] border-[#f59e0b] border-t-transparent rounded-full mb-4"></div>
-              <p className="text-gray-500 text-xs uppercase tracking-widest">
-                Loading messages...
-              </p>
+              <p className="text-gray-500 text-xs uppercase tracking-widest">Loading messages...</p>
             </div>
           ) : filteredMessages.length > 0 ? (
             filteredMessages.map((msg) => (
@@ -247,10 +230,7 @@ export default function Dashboard() {
                         <Archive size={16} />
                       </button>
                     )}
-                    <button
-                      className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition"
-                      title="Share"
-                    >
+                    <button className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition" title="Share">
                       <Share2 size={16} />
                     </button>
                     <button
