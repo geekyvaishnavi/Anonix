@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, User as UserIcon, Camera } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { apiRequest } from "../utils/api";
-import { supabase } from "../lib/supabase"; // ✅ NEW
+import { supabase } from "../lib/supabase";
 
 export default function EditProfile() {
   const [displayName, setDisplayName] = useState("");
-  const [avatarFile, setAvatarFile] = useState(null); // ✅ NEW
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null); // ✅ For UI preview
+  const [userId, setUserId] = useState(null); // ✅ Store ID for upload
   const [isSaving, setIsSaving] = useState(false);
   const navigate = useNavigate();
 
@@ -17,15 +19,25 @@ export default function EditProfile() {
       const data = await apiRequest("/dashboard/me");
       if (data && !data.error) {
         setDisplayName(data.display_name || "");
+        setPreviewUrl(data.avatar_url || null);
+        setUserId(data.id || data._id);
       }
     };
     fetchUser();
   }, []);
 
-  // ✅ NEW: upload DP to Supabase
-  const uploadAvatar = async (file, userId) => {
+  // ✅ Handle file selection and local preview
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAvatarFile(file);
+      setPreviewUrl(URL.createObjectURL(file)); // Create temp URL for preview
+    }
+  };
+
+  const uploadAvatar = async (file, id) => {
     const ext = file.name.split(".").pop();
-    const filePath = `${userId}.${ext}`;
+    const filePath = `${id}.${ext}`;
 
     const { error } = await supabase.storage
       .from("avatars")
@@ -45,26 +57,24 @@ export default function EditProfile() {
     setIsSaving(true);
 
     try {
-      let avatarUrl = null;
+      let avatarUrl = previewUrl; // Keep existing if no new file
 
-      if (avatarFile) {
-        // get user id from backend session
-        const me = await apiRequest("/dashboard/me");
-        avatarUrl = await uploadAvatar(avatarFile, me.id);
+      if (avatarFile && userId) {
+        avatarUrl = await uploadAvatar(avatarFile, userId);
       }
 
       const res = await apiRequest("/user/profile/update", {
         method: "PUT",
         body: JSON.stringify({
           display_name: displayName,
-          avatar_url: avatarUrl, // ✅ send DP URL
+          avatar_url: avatarUrl, 
         }),
       });
 
       if (res.success) {
         navigate("/dashboard");
       } else {
-        alert("Failed to update profile");
+        alert(res.error || "Failed to update profile");
       }
     } catch (err) {
       console.error(err);
@@ -92,18 +102,22 @@ export default function EditProfile() {
           onSubmit={handleSave}
           className="space-y-6 bg-white/5 p-8 rounded-3xl border border-white/10"
         >
-          {/* ✅ DP Upload */}
-          <div>
-            <label className="block text-[10px] uppercase tracking-widest text-[#f59e0b] font-bold mb-3">
+          {/* ✅ Improved Avatar Upload with Preview */}
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative w-24 h-24 rounded-full overflow-hidden bg-black border border-white/10 flex items-center justify-center">
+              {previewUrl ? (
+                <img src={previewUrl} className="w-full h-full object-cover" alt="Profile" />
+              ) : (
+                <UserIcon size={40} className="text-gray-600" />
+              )}
+              <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 cursor-pointer transition">
+                <Camera size={20} />
+                <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+              </label>
+            </div>
+            <label className="text-[10px] uppercase tracking-widest text-[#f59e0b] font-bold">
               Profile Picture
             </label>
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setAvatarFile(e.target.files[0])}
-              className="w-full text-sm"
-            />
           </div>
 
           <div>
