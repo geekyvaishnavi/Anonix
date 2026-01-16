@@ -18,7 +18,7 @@ export const dashboardRoutes = new Elysia({ prefix: '/dashboard' })
     // 2. Fetch the actual profile data (display_name, username) from your profiles table
     const { data: profile, error: profileError } = await supabase
       .from('profiles') // or whatever your table name is
-      .select('username, display_name')
+      .select('username, display_name','pfp_url')
       .eq('id', user.id)
       .single()
 
