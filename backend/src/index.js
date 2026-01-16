@@ -5,6 +5,7 @@ import { messageRoutes } from './routes/messages.js'
 import { replyRoutes } from './routes/replies.js'
 import { profileRoutes } from './routes/profile.js'
 import { dashboardRoutes } from './routes/dashboard.js'
+import {editRoutes} from './routes/edit.js'
 import { authPlugin } from './plugins/auth.js'
 
 const app = new Elysia()
@@ -29,10 +30,11 @@ const app = new Elysia()
     .use(messageRoutes) // Prefix: /messages-- send msgs
     .use(profileRoutes) // Prefix: /u -- public profile
 
-    // 3. Mount Modular Routes
-    .use(authRoutes)    // Prefix: /auth (Login/Signup)
-    .use(replyRoutes)   // Prefix: /replies (Answering)
-    .use(dashboardRoutes)
+    // 3. PROTECTED ROUTES (Requires Login)
+    .use(authPlugin)    // Everything below this line is now private
+    .use(dashboardRoutes) // http://localhost:3000/dashboard/me
+    .use(replyRoutes)
+    .use(editRoutes)    // http://localhost:3000/user/profile/update
 
     // 4. Global Error Handling
     .onError(({ code, error, set }) => {
