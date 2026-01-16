@@ -57,17 +57,17 @@ export default function EditProfile() {
     setIsSaving(true);
 
     try {
-      let avatarUrl = previewUrl; // Keep existing if no new file
+      let pfp_url = previewUrl; // Keep existing if no new file
 
       if (avatarFile && userId) {
-        avatarUrl = await uploadAvatar(avatarFile, userId);
+        pfp_url = await uploadAvatar(avatarFile, userId);
       }
 
       const res = await apiRequest("/user/profile/update", {
         method: "PUT",
         body: JSON.stringify({
           display_name: displayName,
-          avatar_url: avatarUrl, 
+          pfp_url: pfp_url, 
         }),
       });
 
