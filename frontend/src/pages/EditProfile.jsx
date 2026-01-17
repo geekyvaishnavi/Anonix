@@ -9,8 +9,8 @@ import { supabase } from "../lib/supabase";
 export default function EditProfile() {
   const [displayName, setDisplayName] = useState("");
   const [avatarFile, setAvatarFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null); // ✅ For UI preview
-  const [userId, setUserId] = useState(null); // ✅ Store ID for upload
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [userId, setUserId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const navigate = useNavigate();
 
@@ -26,12 +26,11 @@ export default function EditProfile() {
     fetchUser();
   }, []);
 
-  // ✅ Handle file selection and local preview
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setAvatarFile(file);
-      setPreviewUrl(URL.createObjectURL(file)); // Create temp URL for preview
+      setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
@@ -57,7 +56,7 @@ export default function EditProfile() {
     setIsSaving(true);
 
     try {
-      let pfp_url = previewUrl; // Keep existing if no new file
+      let pfp_url = previewUrl;
 
       if (avatarFile && userId) {
         pfp_url = await uploadAvatar(avatarFile, userId);
@@ -102,7 +101,6 @@ export default function EditProfile() {
           onSubmit={handleSave}
           className="space-y-6 bg-white/5 p-8 rounded-3xl border border-white/10"
         >
-          {/* ✅ Improved Avatar Upload with Preview */}
           <div className="flex flex-col items-center gap-4">
             <div className="relative w-24 h-24 rounded-full overflow-hidden bg-black border border-white/10 flex items-center justify-center">
               {previewUrl ? (

@@ -13,12 +13,10 @@ export default function AnswerMessage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
 
-  // 1. Fetch the actual message content when the page loads
   useEffect(() => {
     const fetchOriginalMessage = async () => {
       try {
         setIsLoading(true);
-        // Assuming your backend has an endpoint to get a single message
         const data = await apiRequest(`/dashboard/message/${id}`);
         if (data && data.content) {
           setOriginalMessage(data.content);
@@ -35,18 +33,16 @@ export default function AnswerMessage() {
     fetchOriginalMessage();
   }, [id]);
 
-  // 2. Handle the POST request to answer the message
   const handleSend = async () => {
   if (!answer.trim()) return;
   setIsSending(true);
 
   try {
-    // The prefix is /replies and the method is /send
     const response = await apiRequest('/replies/send', { 
       method: 'POST',
       body: JSON.stringify({ 
-        message_id: id,       // Matches backend t.String()
-        reply_text: answer    // CHANGED: was answer_text, must be reply_text
+        message_id: id,
+        reply_text: answer    // IMPORTANT: must be reply_text, not answer_text
       })
     });
 
@@ -80,7 +76,6 @@ export default function AnswerMessage() {
         </button>
 
         <div className="space-y-6">
-          {/* Original Message Display */}
           <div className="bg-[#0f0f0f] border border-white/5 p-6 rounded-3xl">
             <div className="flex items-center gap-2 mb-4">
               <Shield size={14} className="text-[#f59e0b]" />
@@ -98,7 +93,6 @@ export default function AnswerMessage() {
             )}
           </div>
 
-          {/* Answer Input Area */}
           <div className="relative group">
             <div className="absolute -left-3 top-0 h-full w-[2px] bg-[#f59e0b]/20 group-focus-within:bg-[#f59e0b] transition-colors" />
 
@@ -118,7 +112,6 @@ export default function AnswerMessage() {
             </div>
           </div>
 
-          {/* Action Bar */}
           <div className="pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-[10px] text-gray-600 uppercase tracking-widest max-w-[280px]">
               Once you post, this answer will be visible on your public profile link.

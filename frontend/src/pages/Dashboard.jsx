@@ -36,7 +36,6 @@ export default function Dashboard() {
           return;
         }
 
-        // 1. Fetch user profile
         const userData = await apiRequest("/dashboard/me");
         if (userData && !userData.error) {
           setUser({
@@ -45,7 +44,6 @@ export default function Dashboard() {
           });
         }
 
-        // 2. Fetch Inbox Messages
         const data = await apiRequest("/dashboard/inbox");
         if (Array.isArray(data)) {
           setMessages(data);
@@ -116,7 +114,6 @@ export default function Dashboard() {
       </div>
 
       <div className="relative z-10 flex-grow max-w-2xl mx-auto w-full px-6 pt-24 pb-12">
-        {/* Profile Section */}
         <div className="flex items-center justify-between mb-8 group">
           <div className="flex items-center gap-5">
             <div className="relative">
@@ -145,7 +142,6 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Public Link Section */}
         <div className="bg-black/40 backdrop-blur-xl border border-white/5 p-4 sm:p-5 rounded-3xl mb-10">
           <label className="block text-[10px] uppercase tracking-[0.2em] text-[#f59e0b] font-bold mb-3">
             Your Public Link
@@ -164,7 +160,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Filters */}
         <div className="flex gap-6 mb-8 border-b border-white/5 overflow-x-auto no-scrollbar">
           {["active", "answered", "archived"].map((tab) => (
             <button
@@ -182,7 +177,6 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Messages List */}
         <div className="space-y-3 pb-10">
           {isLoading ? (
             <div className="text-center py-20">

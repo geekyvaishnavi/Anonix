@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { apiRequest } from "../utils/api";
-import { useAuth } from "../context/authContext"; // 1. Import the Auth Hook
+import { useAuth } from "../context/authContext";
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -12,7 +12,7 @@ export default function Register() {
   const [error, setError] = useState("");
   
   const navigate = useNavigate();
-  const { login } = useAuth(); // 2. Initialize the login function
+  const { login } = useAuth();
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -36,10 +36,7 @@ export default function Register() {
       });
 
       if (data && data.token) {
-        // 3. Log the user in globally
         login(data.token); 
-        
-        // 4. Smooth redirect to dashboard
         navigate("/user/dashboard"); 
       } else if (data && data.message === "Account created!") {
         // Fallback if your API creates account but doesn't return token immediately
@@ -68,7 +65,6 @@ export default function Register() {
                 Join ANONIX to receive anonymous messages
               </p>
               
-              {/* Error Message Display */}
               {error && (
                 <div className="mt-4 p-2 bg-red-500/10 border border-red-500/50 rounded text-red-500 text-xs font-medium">
                   {error}

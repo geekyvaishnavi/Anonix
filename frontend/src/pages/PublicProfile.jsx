@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Send, Shield, MessageCircle, Loader2, CheckCircle2 } from "lucide-react";
+import { Send, Shield, MessageCircle, Loader2, CheckCircle2, Quote } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { apiRequest } from "../utils/api";
@@ -71,42 +71,50 @@ export default function PublicProfile() {
     <div className="min-h-screen bg-[#050505] text-white font-sans flex flex-col selection:bg-[#f59e0b]/30">
       <Navbar />
 
-      {/* Subtle Ambient Glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#f59e0b]/5 rounded-full blur-[120px]" />
       </div>
 
       <main className="relative z-10 flex-grow max-w-xl mx-auto w-full px-6 pt-24 pb-24">
         
-        {/* Profile Header */}
         <section className="text-center mb-16">
           <div className="flex justify-center mb-6">
             <div className="relative group">
-              <div className="absolute -inset-0.5 bg-[#f59e0b] rounded-[32px] blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-              <div className="relative w-28 h-28 rounded-[30px] bg-[#0A0A0A] border border-white/10 flex items-center justify-center overflow-hidden shadow-2xl">
+              <div className="absolute -inset-1 bg-[#f59e0b] rounded-[42px] blur-md opacity-20 group-hover:opacity-40 transition duration-500"></div>
+              <div className="relative w-32 h-32 bg-[#0A0A0A] border border-white/10 flex items-center justify-center overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]"
+                   style={{ borderRadius: '40px' }}>
                 {profile.pfp_url ? (
                   <img src={profile.pfp_url} alt={profile.username} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-3xl font-bold text-[#f59e0b]">
-                    {profile.display_name?.[0] || profile.username?.[0]?.toUpperCase()}
+                  <span className="text-4xl font-bold text-[#f59e0b]">
+                    {profile.username?.[0]?.toUpperCase()}
                   </span>
                 )}
               </div>
             </div>
           </div>
 
-          <h1 className="text-lg font-bold tracking-tight text-white uppercase">
-            {profile.display_name || profile.username}
-          </h1>
-          <p className="text-[10px] text-[#f59e0b] uppercase tracking-[0.2em] mt-1 font-black opacity-80">
-            @{profile.username}
-          </p>
-          <p className="mt-4 text-[13px] text-gray-400 font-light leading-relaxed max-w-sm mx-auto">
-            {profile.bio || "Welcome to my anonymous message board."}
-          </p>
+          <div className="inline-block px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-sm mb-6">
+            <p className="text-[10px] text-[#f59e0b] uppercase tracking-[0.3em] font-black">
+              @{profile.username}
+            </p>
+          </div>
+
+          {profile.bio && (
+            <div className="relative max-w-sm mx-auto mt-4 group">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-[#f59e0b]/20 transition-all duration-300 group-hover:text-[#f59e0b]/40">
+                <Quote size={22} fill="currentColor" />
+              </div>
+              
+              <div className="bg-white/[0.02] backdrop-blur-lg border border-white/5 rounded-2xl p-6 shadow-2xl">
+                <p className="text-[14px] text-gray-400 font-light leading-relaxed italic">
+                  {profile.bio}
+                </p>
+              </div>
+            </div>
+          )}
         </section>
 
-        {/* Message Input Box */}
         <section className="bg-[#0A0A0A] border border-white/5 rounded-[24px] p-5 mb-20 shadow-2xl relative overflow-hidden group">
           <div className="flex items-center gap-2 mb-4">
             <Shield size={12} className="text-[#f59e0b]" />
@@ -141,7 +149,6 @@ export default function PublicProfile() {
           </div>
         </section>
 
-        {/* Answered Feed */}
         <div className="flex items-center gap-3 mb-10">
           <MessageCircle size={14} className="text-[#f59e0b]" />
           <h2 className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-black">
@@ -159,11 +166,10 @@ export default function PublicProfile() {
                     "{item.content}"
                   </p>
 
-                  <div className="relative pl-5">
-                    <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-[#f59e0b] to-transparent opacity-40" />
+                  <div className="relative pl-5 border-l-2 border-[#f59e0b]/30">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-[8px] uppercase tracking-[0.2em] text-[#f59e0b] font-black">
-                        Reply from @{profile.username}
+                        Response
                       </span>
                     </div>
                     <p className="text-gray-200 text-sm font-medium leading-relaxed">
@@ -176,7 +182,7 @@ export default function PublicProfile() {
           </section>
         ) : (
           <div className="text-center py-20 border border-dashed border-white/5 rounded-[24px]">
-            <p className="text-gray-700 text-[9px] uppercase tracking-[0.3em] font-black">
+            <p className="text-gray-700 text-[9px] uppercase tracking-[0.4em] font-black">
               No answers yet
             </p>
           </div>

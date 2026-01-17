@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useAuth } from '../context/authContext'; // Ensure this path matches your file structure
+import { useAuth } from '../context/authContext';
 
 export default function Navbar() {
   const { isLoggedIn, logout } = useAuth();
@@ -13,31 +13,26 @@ export default function Navbar() {
     navigate("/login");
   };
 
-  // 1. Define links and their visibility rules
   const navLinks = [
-    { name: 'Home', href: '/', show: !isLoggedIn }, // Only show if NOT logged in
+    { name: 'Home', href: '/', show: !isLoggedIn },
     { name: 'About Us', href: '/about', show: true },
     { name: 'Contact Us', href: '/contact', show: true },
-    { name: 'Dashboard', href: '/user/dashboard', show: isLoggedIn }, // Only show if logged in
-    { name: 'Register', href: '/register', show: !isLoggedIn },  // Only show if NOT logged in
+    { name: 'Dashboard', href: '/user/dashboard', show: isLoggedIn },
+    { name: 'Register', href: '/register', show: !isLoggedIn },
   ];
 
-  // 2. Filter the links based on current auth state
   const visibleLinks = navLinks.filter(link => link.show);
 
   return (
     <nav className="fixed top-0 w-full h-16 z-[100] bg-black/50 backdrop-blur-xl border-b border-white/5">
       <div className="max-w-7xl mx-auto h-full px-6 md:px-12 flex items-center justify-between">
         
-        {/* Logo */}
         <Link to="/" className="text-lg md:text-xl font-semibold italic uppercase tracking-tight text-white hover:opacity-90 transition">
           ANONIX<span className="text-[#f59e0b]">.</span>
         </Link>
 
-        {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-10">
           <div className="flex items-center gap-10">
-            {/* Map over filtered visibleLinks */}
             {visibleLinks.map((link) => (
               <Link key={link.name} to={link.href} className="relative text-[11px] font-medium uppercase tracking-[0.18em] text-gray-400 hover:text-white transition group">
                 {link.name}
@@ -46,7 +41,6 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Auth Button: Login or Logout */}
           {isLoggedIn ? (
             <button 
               onClick={handleLogout} 
@@ -64,7 +58,6 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Hamburger Icon (Mobile) */}
         <button 
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="md:hidden flex flex-col gap-1.5 focus:outline-none"
@@ -75,10 +68,8 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-16 left-0 w-full bg-[#050505] border-b border-white/10 flex flex-col p-6 space-y-6 backdrop-blur-3xl">
-          {/* Use visibleLinks here too for consistency */}
           {visibleLinks.map((link) => (
             <Link 
               key={link.name} 
