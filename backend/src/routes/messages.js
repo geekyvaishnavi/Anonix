@@ -5,10 +5,9 @@ export const messageRoutes = new Elysia({ prefix: '/messages' })
   .post('/send', async ({ body, set }) => {
     const { recipient_id, content } = body
     
-    // Insert into the 'messages' table in Supabase
     const { error } = await supabase
       .from('messages')
-      .insert([{ recipient_id, content }]) // Note: Supabase prefers an array of objects
+      .insert([{ recipient_id, content }])
 
     if (error) {
       set.status = 400

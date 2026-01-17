@@ -10,7 +10,6 @@ export const isAuthenticated = async ({ request, set }) => {
 
     const token = authHeader.split(' ')[1]
     
-    // Verifies the JWT with Supabase
     const { data: { user }, error } = await supabase.auth.getUser(token)
 
     if (error || !user) {
@@ -18,6 +17,5 @@ export const isAuthenticated = async ({ request, set }) => {
         return { error: 'Invalid Session' }
     }
 
-    // Pass the user object to the next handler
     return { user }
 }

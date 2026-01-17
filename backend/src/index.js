@@ -5,38 +5,35 @@ import { messageRoutes } from './routes/messages.js'
 import { replyRoutes } from './routes/replies.js'
 import { profileRoutes } from './routes/profile.js'
 import { dashboardRoutes } from './routes/dashboard.js'
-import {editRoutes} from './routes/edit.js'
+import { editRoutes } from './routes/edit.js'
 import { authPlugin } from './plugins/auth.js'
 
 const app = new Elysia()
-
-    .use(authPlugin) // Now ALL routes below have access to 'user' and 'jwt'
-    
-    // 1. Setup Middlewares
     .use(cors({
-        origin: 'http://localhost:5173', // Your React dev URL
-        credentials: true,               // Essential for Cookies/JWT
+        origin: 'http://localhost:5173',
+        credentials: true,
         allowedHeaders: ['Content-Type', 'Authorization']
     }))
 
-    // 2. Health Check (To see if server is alive)
     .get('/', () => ({
         status: 'online',
         app: 'Sayout Clone API',
         runtime: 'Bun'
     }))
 
-    //no need to be logged in 
-    .use(messageRoutes) // Prefix: /messages-- send msgs
-    .use(profileRoutes) // Prefix: /u -- public profile
+    .use(authRoutes)
+    .use(messageRoutes)
+    .use(profileRoutes)
 
-    // 3. PROTECTED ROUTES (Requires Login)
-    .use(authPlugin)    // Everything below this line is now private
-    .use(dashboardRoutes) // http://localhost:3000/dashboard/me
-    .use(replyRoutes)
-    .use(editRoutes)    // http://localhost:3000/user/profile/update
+    // The authPlugin acts as a gatekeeper for everything defined below it
+    .guard({}, (app) => 
+        app
+            .use(authPlugin) 
+            .use(dashboardRoutes)
+            .use(replyRoutes)
+            .use(editRoutes)
+    )
 
-    // 4. Global Error Handling
     .onError(({ code, error, set }) => {
         if (code === 'NOT_FOUND') {
             set.status = 404
@@ -48,9 +45,8 @@ const app = new Elysia()
         }
     })
 
-    // 5. Start Server
     .listen(process.env.PORT || 3000)
 
 console.log(
-    `🦊 Sayout Backend is running at ${app.server?.hostname}:${app.server?.port}`
+    `Backend is running at ${app.server?.hostname}:${app.server?.port}`
 )
