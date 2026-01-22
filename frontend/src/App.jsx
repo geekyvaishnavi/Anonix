@@ -25,8 +25,8 @@ export default function App() {
         <Route path="/terms-conditions" element={<TermsConditions />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
+        <Route path="/about-us" element={<About />} />
+        <Route path="/contact-us" element={<Contact />} />
         <Route path="/user/profile/edit" element={<Profile />} />
         <Route path="/user/dashboard" element={<Dashboard />} />
         <Route path="/answer/:id" element={<AnswerMessage />} />
