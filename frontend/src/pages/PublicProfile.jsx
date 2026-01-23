@@ -152,7 +152,7 @@ export default function PublicProfile() {
         <div className="flex items-center gap-3 mb-10">
           <MessageCircle size={14} className="text-[#f59e0b]" />
           <h2 className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-black">
-            The Archive
+            Answers
           </h2>
           <div className="h-px flex-grow bg-white/5"></div>
         </div>
