@@ -190,7 +190,7 @@ export default function Dashboard() {
           ) : filteredMessages.length > 0 ? (
             filteredMessages.map((msg) => {
               // Extract the reply text from the nested array
-              const answerText = msg.replies?.[0]?.reply_text;
+              const answerText = msg.replies?.reply_text;
 
               return (
                 <div

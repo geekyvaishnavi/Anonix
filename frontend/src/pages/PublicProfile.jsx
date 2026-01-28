@@ -195,8 +195,14 @@ export default function PublicProfile() {
           <section className="space-y-6">
             {answered.map((item) => {
               // EXTRACT RESPONSE TEXT FROM NESTED ARRAY
-              const responseText = item.replies?.[0]?.reply_text;
+              const responseText = item.replies?.reply_text;
 
+
+              // array obj reply change
+
+              
+              console.log(answered); 
+              console.log(item);
               return (
                 <div key={item.id}>
                   <div className="bg-[#0A0A0A] border border-white/5 rounded-[18px] p-5 hover:border-white/10 transition-colors">
