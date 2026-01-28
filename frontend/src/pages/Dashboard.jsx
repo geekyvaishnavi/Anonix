@@ -114,6 +114,7 @@ export default function Dashboard() {
       </div>
 
       <div className="relative z-10 flex-grow max-w-2xl mx-auto w-full px-6 pt-24 pb-12">
+        {/* User Profile Info */}
         <div className="flex items-center justify-between mb-8 group">
           <div className="flex items-center gap-5">
             <div className="relative">
@@ -142,6 +143,7 @@ export default function Dashboard() {
           </button>
         </div>
 
+        {/* Link Box */}
         <div className="bg-black/40 backdrop-blur-xl border border-white/5 p-4 sm:p-5 rounded-3xl mb-10">
           <label className="block text-[10px] uppercase tracking-[0.2em] text-[#f59e0b] font-bold mb-3">
             Your Public Link
@@ -160,6 +162,7 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Tab Selection */}
         <div className="flex gap-6 mb-8 border-b border-white/5 overflow-x-auto no-scrollbar">
           {["active", "answered", "archived"].map((tab) => (
             <button
@@ -177,6 +180,7 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {/* Message Mapping */}
         <div className="space-y-3 pb-10">
           {isLoading ? (
             <div className="text-center py-20">
@@ -184,60 +188,79 @@ export default function Dashboard() {
               <p className="text-gray-500 text-xs uppercase tracking-widest">Loading messages...</p>
             </div>
           ) : filteredMessages.length > 0 ? (
-            filteredMessages.map((msg) => (
-              <div
-                key={msg.id}
-                className="group bg-[#0f0f0f] border border-white/5 p-5 rounded-2xl transition-all hover:border-[#f59e0b]/20"
-              >
-                <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-5 italic font-light">
-                  "{msg.content}"
-                </p>
+            filteredMessages.map((msg) => {
+              // Extract the reply text from the nested array
+              const answerText = msg.replies?.[0]?.reply_text;
 
-                <div className="flex items-center justify-between pt-4 border-t border-white/[0.03]">
-                  <span className="text-[10px] text-gray-600 font-mono uppercase tracking-widest">
-                    {formatTime(msg.created_at)}
-                  </span>
+              return (
+                <div
+                  key={msg.id}
+                  className="group bg-[#0f0f0f] border border-white/5 p-5 rounded-2xl transition-all hover:border-[#f59e0b]/20"
+                >
+                  <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-5 italic font-light">
+                    "{msg.content}"
+                  </p>
 
-                  <div className="flex items-center gap-1">
-                    <Link
-                      to={`/answer/${msg.id}`}
-                      className="p-2 rounded-lg text-gray-500 hover:text-[#f59e0b] hover:bg-[#f59e0b]/10 transition"
-                      title="Answer"
-                    >
-                      <MessageCircle size={16} />
-                    </Link>
-                    
-                    {msg.status === "archived" ? (
-                      <button
-                        onClick={() => handleStatusUpdate(msg.id, "active")}
-                        className="p-2 rounded-lg text-gray-500 hover:text-green-400 hover:bg-green-400/10 transition"
-                        title="Unarchive"
-                      >
-                        <RotateCcw size={16} />
+                  {/* ANSWER BOX: Shows when status is answered and reply exists */}
+                  {msg.status === "answered" && answerText && (
+                    <div className="mb-5 p-4 bg-[#f59e0b]/5 border-l-2 border-[#f59e0b] rounded-r-xl">
+                      <label className="block text-[9px] uppercase tracking-widest text-[#f59e0b] font-bold mb-1">
+                        Your Answer
+                      </label>
+                      <p className="text-gray-200 text-sm leading-relaxed">
+                        {answerText}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between pt-4 border-t border-white/[0.03]">
+                    <span className="text-[10px] text-gray-600 font-mono uppercase tracking-widest">
+                      {formatTime(msg.created_at)}
+                    </span>
+
+                    <div className="flex items-center gap-1">
+                      {msg.status !== "answered" && (
+                        <Link
+                          to={`/answer/${msg.id}`}
+                          className="p-2 rounded-lg text-gray-500 hover:text-[#f59e0b] hover:bg-[#f59e0b]/10 transition"
+                          title="Answer"
+                        >
+                          <MessageCircle size={16} />
+                        </Link>
+                      )}
+                      
+                      {msg.status === "archived" ? (
+                        <button
+                          onClick={() => handleStatusUpdate(msg.id, "active")}
+                          className="p-2 rounded-lg text-gray-500 hover:text-green-400 hover:bg-green-400/10 transition"
+                          title="Unarchive"
+                        >
+                          <RotateCcw size={16} />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleStatusUpdate(msg.id, "archived")}
+                          className="p-2 rounded-lg text-gray-500 hover:text-blue-400 hover:bg-blue-400/10 transition"
+                          title="Archive"
+                        >
+                          <Archive size={16} />
+                        </button>
+                      )}
+                      <button className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition" title="Share">
+                        <Share2 size={16} />
                       </button>
-                    ) : (
                       <button
-                        onClick={() => handleStatusUpdate(msg.id, "archived")}
-                        className="p-2 rounded-lg text-gray-500 hover:text-blue-400 hover:bg-blue-400/10 transition"
-                        title="Archive"
+                        onClick={() => handleDelete(msg.id)}
+                        className="p-2 rounded-lg text-gray-500 hover:text-red-500 hover:bg-red-500/10 transition"
+                        title="Delete"
                       >
-                        <Archive size={16} />
+                        <Trash2 size={16} />
                       </button>
-                    )}
-                    <button className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition" title="Share">
-                      <Share2 size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(msg.id)}
-                      className="p-2 rounded-lg text-gray-500 hover:text-red-500 hover:bg-red-500/10 transition"
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <div className="text-center py-16 bg-[#080808] rounded-3xl border border-dashed border-white/5">
               <p className="text-gray-700 text-[10px] uppercase tracking-[0.3em] font-bold">

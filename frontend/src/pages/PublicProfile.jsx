@@ -29,7 +29,9 @@ export default function PublicProfile() {
         const data = await apiRequest(`/u/${username}`);
         if (data && !data.error) {
           setProfile(data.profile);
-          setAnswered(data.feed || []);
+          // Only show messages that have a status of 'answered'
+          const feed = data.feed || [];
+          setAnswered(feed.filter(item => item.status === 'answered'));
         }
       } catch (err) {
         console.error("Profile fetch error:", err);
@@ -65,7 +67,6 @@ export default function PublicProfile() {
     }
   };
 
-  /* -------------------- LOADING -------------------- */
   if (loading) {
     return (
       <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center">
@@ -77,7 +78,6 @@ export default function PublicProfile() {
     );
   }
 
-  /* -------------------- NOT FOUND -------------------- */
   if (!profile) {
     return (
       <div className="min-h-screen bg-[#050505] flex items-center justify-center text-red-500 uppercase tracking-widest text-[10px] font-bold">
@@ -90,15 +90,13 @@ export default function PublicProfile() {
     <div className="min-h-screen bg-[#050505] text-white font-sans flex flex-col selection:bg-[#f59e0b]/30">
       <Navbar />
 
-      {/* Ambient Glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[12%] left-1/2 -translate-x-1/2 w-[520px] h-[360px] bg-[#f59e0b]/5 rounded-full blur-[120px]" />
       </div>
 
       <main className="relative z-10 flex-grow max-w-2xl mx-auto w-full px-5 sm:px-6 pt-24 sm:pt-28 pb-24 scroll-smooth">
-        {/* -------------------- PROFILE -------------------- */}
+        {/* Profile Header */}
         <section className="text-center mb-14">
-          {/* Avatar */}
           <div className="flex justify-center mb-5">
             <div className="relative group">
               <div className="absolute -inset-1 bg-[#f59e0b] rounded-[28px] blur-md opacity-20 group-hover:opacity-40 transition duration-500" />
@@ -121,21 +119,18 @@ export default function PublicProfile() {
             </div>
           </div>
 
-          {/* Username */}
           <div className="inline-block px-4 py-1.5 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-sm mb-6">
             <p className="text-[10px] text-[#f59e0b] uppercase tracking-[0.3em] font-black">
               @{profile.username}
             </p>
           </div>
 
-          {/* Bio */}
           {profile.bio && (
             <div className="mt-6 flex justify-center">
               <div className="relative max-w-md w-full group">
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-[#f59e0b]/25 group-hover:text-[#f59e0b]/40 transition-all">
                   <Quote size={20} fill="currentColor" />
                 </div>
-
                 <div className="bg-white/[0.025] backdrop-blur-lg border border-white/5 rounded-2xl px-6 py-5 shadow-xl">
                   <p className="text-[13px] text-gray-400 font-light leading-relaxed italic text-center">
                     {profile.bio}
@@ -146,7 +141,7 @@ export default function PublicProfile() {
           )}
         </section>
 
-        {/* -------------------- MESSAGE BOX -------------------- */}
+        {/* Message Input Box */}
         <section className="bg-[#0A0A0A] border border-white/5 rounded-[20px] p-4 mb-16 shadow-xl">
           <div className="flex items-center gap-2 mb-3">
             <Shield size={12} className="text-[#f59e0b]" />
@@ -187,7 +182,7 @@ export default function PublicProfile() {
           </div>
         </section>
 
-        {/* -------------------- ANSWERS -------------------- */}
+        {/* Public Feed / Answers */}
         <div className="flex items-center gap-3 mb-8">
           <MessageCircle size={14} className="text-[#f59e0b]" />
           <h2 className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-black">
@@ -198,24 +193,29 @@ export default function PublicProfile() {
 
         {answered.length > 0 ? (
           <section className="space-y-6">
-            {answered.map((item) => (
-              <div key={item.id}>
-                <div className="bg-[#0A0A0A] border border-white/5 rounded-[18px] p-5 hover:border-white/10 transition-colors">
-                  <p className="text-gray-500 text-[13px] font-light leading-relaxed mb-4 italic">
-                    “{item.content}”
-                  </p>
+            {answered.map((item) => {
+              // EXTRACT RESPONSE TEXT FROM NESTED ARRAY
+              const responseText = item.replies?.[0]?.reply_text;
 
-                  <div className="relative pl-4 border-l-2 border-[#f59e0b]/30">
-                    <span className="text-[8px] uppercase tracking-[0.2em] text-[#f59e0b] font-black block mb-1">
-                      Response
-                    </span>
-                    <p className="text-gray-200 text-sm font-medium leading-relaxed tracking-[0.01em]">
-                      {item.replies?.[0]?.reply_text || "No response provided."}
+              return (
+                <div key={item.id}>
+                  <div className="bg-[#0A0A0A] border border-white/5 rounded-[18px] p-5 hover:border-white/10 transition-colors">
+                    <p className="text-gray-500 text-[13px] font-light leading-relaxed mb-4 italic">
+                      “{item.content}”
                     </p>
+
+                    <div className="relative pl-4 border-l-2 border-[#f59e0b]/30">
+                      <span className="text-[8px] uppercase tracking-[0.2em] text-[#f59e0b] font-black block mb-1">
+                        Response
+                      </span>
+                      <p className="text-gray-200 text-sm font-medium leading-relaxed tracking-[0.01em]">
+                        {responseText || "No response provided."}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </section>
         ) : (
           <div className="text-center py-14 border border-dashed border-white/5 rounded-[20px]">
