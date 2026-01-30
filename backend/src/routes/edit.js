@@ -2,19 +2,28 @@ import { Elysia, t } from 'elysia'
 import { supabase } from '../db/supabase'
 
 export const editRoutes = new Elysia({ prefix: '/user' })
-  .put('/profile/update', async ({ body, set, user }) => {
+  .put('/profile/update', async ({ body, set, request }) => {
     try {
-      const { display_name, avatar_url } = body
+      const authHeader = request.headers.get('Authorization')
+      const token = authHeader?.split(' ')[1]
+      
+      // Get user from token
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+      if (authError || !user) {
+        set.status = 401
+        return { error: "Unauthorized" }
+      }
 
-      // 1. Update the 'profiles' table in Supabase
-      // Note: mapping 'avatar_url' (frontend) to 'pfp_url' (database)
+      const { display_name, avatar_url, bio } = body
+
       const { data, error } = await supabase
         .from('profiles')
         .update({ 
-          display_name: display_name, 
-          pfp_url: avatar_url 
+          display_name, 
+          pfp_url: avatar_url,
+          bio: bio // Added bio here
         })
-        .eq('id', user.id) // user.id comes from your auth middleware
+        .eq('id', user.id)
         .select()
         .single()
 
@@ -26,7 +35,8 @@ export const editRoutes = new Elysia({ prefix: '/user' })
       return {
         success: true,
         display_name: data.display_name,
-        avatar_url: data.pfp_url
+        avatar_url: data.pfp_url,
+        bio: data.bio
       }
 
     } catch (err) {
@@ -34,9 +44,9 @@ export const editRoutes = new Elysia({ prefix: '/user' })
       return { success: false, error: "Internal Server Error" }
     }
   }, {
-    // 2. Automatic Validation (The "Elysia Way")
     body: t.Object({
       display_name: t.String({ minLength: 2 }),
+      bio: t.Optional(t.String({ maxLength: 160 })),
       avatar_url: t.Optional(t.String())
     })
   })
