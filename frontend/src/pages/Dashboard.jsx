@@ -19,7 +19,12 @@ import { useAuth } from "../context/authContext";
 
 export default function Dashboard() {
   const [messages, setMessages] = useState([]);
-  const [user, setUser] = useState({ name: "User", username: "username" });
+  const [user, setUser] = useState({
+    name: null,
+    username: "username",
+    pfp_url: null,
+    bio: null,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState("active");
   const [copied, setCopied] = useState(false);
@@ -39,8 +44,10 @@ export default function Dashboard() {
         const userData = await apiRequest("/dashboard/me");
         if (userData && !userData.error) {
           setUser({
-            name: userData.display_name || "User",
-            username: userData.username || "username",
+            name: userData.display_name,
+            username: userData.username,
+            pfp_url: userData.pfp_url,
+            bio: userData.bio,
           });
         }
 
@@ -51,7 +58,7 @@ export default function Dashboard() {
           handleLogout();
         }
       } catch (error) {
-        console.error("Failed to fetch dashboard data:", error);
+        console.error("Dashboard fetch error:", error);
       } finally {
         setIsLoading(false);
       }
@@ -75,14 +82,15 @@ export default function Dashboard() {
   const handleStatusUpdate = async (id, newStatus) => {
     try {
       const previousMessages = [...messages];
-      setMessages(messages.map((m) => (m.id === id ? { ...m, status: newStatus } : m)));
+      setMessages(
+        messages.map((m) => (m.id === id ? { ...m, status: newStatus } : m))
+      );
       const response = await apiRequest(`/dashboard/message/${id}/status`, {
         method: "PATCH",
         body: JSON.stringify({ status: newStatus }),
       });
       if (!response.success) {
         setMessages(previousMessages);
-        alert("Failed to update status");
       }
     } catch (err) {
       console.error(err);
@@ -99,27 +107,61 @@ export default function Dashboard() {
     }
   };
 
-  const filteredMessages = messages.filter((m) => m.status === filter);
+  
+  const filteredMessages = messages.filter((m) => {
+    // handling array or single object for replies
+    const hasReply = Array.isArray(m.replies) 
+      ? m.replies.length > 0 
+      : !!m.replies;
+
+    //archived
+    if (filter === "archived") {
+      return m.status === "archived";
+    }
+
+    // answered tab
+    if (filter === "answered") {
+      return hasReply && m.status !== "archived";
+    }
+
+    // active tab
+    if (filter === "active") {
+      return !hasReply && m.status === "active";
+    }
+
+    return false;
+  });
+
   const formatTime = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return (
+      date.toLocaleDateString() +
+      " " +
+      date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    );
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#050505] text-white font-sans flex flex-col">
+    <div className="min-h-screen w-full bg-[#050505] text-white font-sans flex flex-col selection:bg-[#f59e0b]/30">
       <Navbar />
 
+      {/* Aesthetic Background Glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#f59e0b]/5 rounded-full blur-[120px]" />
       </div>
 
-      <div className="relative z-10 flex-grow max-w-2xl mx-auto w-full px-6 pt-24 pb-12">
-        {/* User Profile Info */}
-        <div className="flex items-center justify-between mb-8 group">
+      <main className="relative z-10 flex-grow max-w-2xl mx-auto w-full px-6 pt-24 pb-12">
+        
+        {/* Profile Header */}
+        <section className="flex items-start justify-between mb-8 group">
           <div className="flex items-center gap-5">
             <div className="relative">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-br from-[#111] to-[#050505] border border-white/10 flex items-center justify-center text-[#f59e0b] shadow-2xl">
-                <User size={32} strokeWidth={1.5} />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-[#0A0A0A] border border-white/10 flex items-center justify-center overflow-hidden shadow-2xl">
+                {user.pfp_url ? (
+                  <img src={user.pfp_url} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <User size={32} strokeWidth={1.5} className="text-[#f59e0b]" />
+                )}
               </div>
               <Link
                 to="/user/profile/edit"
@@ -128,130 +170,123 @@ export default function Dashboard() {
                 <Edit2 size={12} strokeWidth={3} />
               </Link>
             </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">{user.name}</h2>
-              <p className="text-gray-500 text-sm italic">@{user.username}</p>
+            <div className="flex flex-col">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+                {user.name || user.username}
+              </h2>
+              <p className="text-[#f59e0b] text-xs font-black uppercase tracking-widest mt-1 opacity-80">
+                @{user.username}
+              </p>
+              <p className="text-gray-400 text-xs font-light leading-relaxed mt-2 max-w-[280px]">
+                {user.bio ? user.bio : <span className="text-gray-600 italic">Bio unavailable</span>}
+              </p>
             </div>
           </div>
 
           <button
             onClick={handleLogout}
             className="p-3 rounded-2xl bg-white/5 border border-white/10 text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition"
-            title="Logout"
           >
             <LogOut size={20} />
           </button>
-        </div>
+        </section>
 
-        {/* Link Box */}
-        <div className="bg-black/40 backdrop-blur-xl border border-white/5 p-4 sm:p-5 rounded-3xl mb-10">
-          <label className="block text-[10px] uppercase tracking-[0.2em] text-[#f59e0b] font-bold mb-3">
-            Your Public Link
+        {/* Share Link Box */}
+        <section className="bg-black/40 backdrop-blur-xl border border-white/5 p-4 sm:p-5 rounded-3xl mb-10">
+          <label className="block text-[9px] uppercase tracking-[0.3em] text-[#f59e0b] font-black mb-3 opacity-50">
+            Profile Link
           </label>
-          <div className="flex items-center justify-between bg-[#050505] border border-white/10 rounded-2xl p-2.5 pl-4">
-            <span className="text-xs sm:text-sm text-gray-400 truncate">
+          <div className="flex items-center justify-between bg-[#050505] border border-white/10 rounded-2xl p-2 pl-4">
+            <span className="text-xs text-gray-500 truncate mr-4">
               {window.location.origin}/u/{user.username}
             </span>
             <button
               onClick={copyLink}
-              className="flex items-center gap-2 bg-[#f59e0b] text-black px-4 py-2 rounded-xl text-[10px] font-bold hover:brightness-110 transition shrink-0"
+              className="flex items-center gap-2 bg-[#f59e0b] text-black px-4 py-2 rounded-xl text-[10px] font-black hover:brightness-110 transition shrink-0"
             >
               {copied ? <Check size={14} /> : <Copy size={14} />}
               {copied ? "COPIED" : "COPY"}
             </button>
           </div>
-        </div>
+        </section>
 
         {/* Tab Selection */}
-        <div className="flex gap-6 mb-8 border-b border-white/5 overflow-x-auto no-scrollbar">
+        <nav className="flex gap-6 mb-8 border-b border-white/5 overflow-x-auto no-scrollbar">
           {["active", "answered", "archived"].map((tab) => (
             <button
               key={tab}
               onClick={() => setFilter(tab)}
-              className={`pb-3 text-xs font-bold uppercase tracking-widest transition-all relative whitespace-nowrap ${
+              className={`pb-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative whitespace-nowrap ${
                 filter === tab ? "text-[#f59e0b]" : "text-gray-600 hover:text-gray-400"
               }`}
             >
               {tab}
               {filter === tab && (
-                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#f59e0b] shadow-[0_0_10px_#f59e0b]" />
+                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#f59e0b] shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
               )}
             </button>
           ))}
-        </div>
+        </nav>
 
-        {/* Message Mapping */}
-        <div className="space-y-3 pb-10">
+        {/* Message Feed */}
+        <div className="space-y-4 pb-10">
           {isLoading ? (
             <div className="text-center py-20">
-              <div className="animate-spin inline-block w-6 h-6 border-[3px] border-[#f59e0b] border-t-transparent rounded-full mb-4"></div>
-              <p className="text-gray-500 text-xs uppercase tracking-widest">Loading messages...</p>
+              <div className="animate-spin inline-block w-5 h-5 border-[2px] border-[#f59e0b] border-t-transparent rounded-full mb-4"></div>
+              <p className="text-gray-600 text-[10px] uppercase tracking-widest">Refreshing Feed</p>
             </div>
           ) : filteredMessages.length > 0 ? (
             filteredMessages.map((msg) => {
-              // Extract the reply text from the nested array
-              const answerText = msg.replies?.reply_text;
+              // Extract reply text 
+              const replyData = Array.isArray(msg.replies) ? msg.replies[0] : msg.replies;
+              const answerText = replyData?.reply_text;
 
               return (
-                <div
-                  key={msg.id}
-                  className="group bg-[#0f0f0f] border border-white/5 p-5 rounded-2xl transition-all hover:border-[#f59e0b]/20"
-                >
-                  <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-5 italic font-light">
-                    "{msg.content}"
-                  </p>
+                <div key={msg.id} className="bg-[#0A0A0A] border border-white/5 rounded-2xl hover:border-white/10 transition-all overflow-hidden flex flex-col">
+                  {/* Question Box */}
+                  <div className="p-5">
+                    <p className="text-gray-300 text-sm leading-relaxed italic font-light">
+                      "{msg.content}"
+                    </p>
+                  </div>
 
-                  {/* ANSWER BOX: Shows when status is answered and reply exists */}
-                  {msg.status === "answered" && answerText && (
-                    <div className="mb-5 p-4 bg-[#f59e0b]/5 border-l-2 border-[#f59e0b] rounded-r-xl">
-                      <label className="block text-[9px] uppercase tracking-widest text-[#f59e0b] font-bold mb-1">
-                        Your Answer
-                      </label>
-                      <p className="text-gray-200 text-sm leading-relaxed">
-                        {answerText}
-                      </p>
+                  {/* Attached Response Box */}
+                  {answerText && (
+                    <div className="px-5 pb-5">
+                      <div className="p-4 bg-white/[0.02] border-l-2 border-[#f59e0b] rounded-r-xl">
+                        <label className="block text-[8px] uppercase tracking-widest text-[#f59e0b] font-black mb-1 opacity-60">
+                          Your Response
+                        </label>
+                        <p className="text-gray-200 text-sm font-medium">
+                          {answerText}
+                        </p>
+                      </div>
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between pt-4 border-t border-white/[0.03]">
-                    <span className="text-[10px] text-gray-600 font-mono uppercase tracking-widest">
+                  {/* Actions Footer */}
+                  <div className="px-5 py-3 bg-white/[0.01] border-t border-white/[0.03] flex items-center justify-between">
+                    <span className="text-[9px] text-gray-600 font-mono tracking-tighter">
                       {formatTime(msg.created_at)}
                     </span>
-
                     <div className="flex items-center gap-1">
-                      {msg.status !== "answered" && (
-                        <Link
-                          to={`/answer/${msg.id}`}
-                          className="p-2 rounded-lg text-gray-500 hover:text-[#f59e0b] hover:bg-[#f59e0b]/10 transition"
-                          title="Answer"
-                        >
+                      {!answerText && (
+                        <Link to={`/answer/${msg.id}`} className="p-2 text-gray-500 hover:text-[#f59e0b] transition" title="Answer">
                           <MessageCircle size={16} />
                         </Link>
                       )}
                       
-                      {msg.status === "archived" ? (
-                        <button
-                          onClick={() => handleStatusUpdate(msg.id, "active")}
-                          className="p-2 rounded-lg text-gray-500 hover:text-green-400 hover:bg-green-400/10 transition"
-                          title="Unarchive"
-                        >
-                          <RotateCcw size={16} />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleStatusUpdate(msg.id, "archived")}
-                          className="p-2 rounded-lg text-gray-500 hover:text-blue-400 hover:bg-blue-400/10 transition"
-                          title="Archive"
-                        >
-                          <Archive size={16} />
-                        </button>
-                      )}
-                      <button className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition" title="Share">
-                        <Share2 size={16} />
+                      <button 
+                        onClick={() => handleStatusUpdate(msg.id, msg.status === "archived" ? "active" : "archived")}
+                        className="p-2 text-gray-500 hover:text-white transition"
+                        title={msg.status === "archived" ? "Unarchive" : "Archive"}
+                      >
+                        {msg.status === "archived" ? <RotateCcw size={16} /> : <Archive size={16} />}
                       </button>
-                      <button
-                        onClick={() => handleDelete(msg.id)}
-                        className="p-2 rounded-lg text-gray-500 hover:text-red-500 hover:bg-red-500/10 transition"
+
+                      <button 
+                        onClick={() => handleDelete(msg.id)} 
+                        className="p-2 text-gray-500 hover:text-red-500 transition"
                         title="Delete"
                       >
                         <Trash2 size={16} />
@@ -262,14 +297,15 @@ export default function Dashboard() {
               );
             })
           ) : (
-            <div className="text-center py-16 bg-[#080808] rounded-3xl border border-dashed border-white/5">
-              <p className="text-gray-700 text-[10px] uppercase tracking-[0.3em] font-bold">
-                No {filter} messages found
+            <div className="text-center py-20 border border-dashed border-white/5 rounded-3xl">
+              <p className="text-gray-700 text-[10px] uppercase tracking-[0.4em] font-black">
+                No {filter} messages
               </p>
             </div>
           )}
         </div>
-      </div>
+      </main>
+
       <Footer />
     </div>
   );
