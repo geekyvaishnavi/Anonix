@@ -21,7 +21,7 @@ export const editRoutes = new Elysia({ prefix: '/user' })
         .update({ 
           display_name, 
           pfp_url: avatar_url,
-          bio: bio // Added bio here
+          bio: bio 
         })
         .eq('id', user.id)
         .select()
