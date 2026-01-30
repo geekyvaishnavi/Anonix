@@ -27,7 +27,7 @@ export default function Navbar() {
     <nav className="fixed top-0 w-full h-16 z-[100] bg-black/50 backdrop-blur-xl border-b border-white/5">
       <div className="max-w-7xl mx-auto h-full px-6 md:px-12 flex items-center justify-between">
         <Link
-          to="/"
+          to={isLoggedIn ? "/user/dashboard" : "/"}
           className="text-lg md:text-xl font-semibold italic uppercase tracking-tight text-white hover:opacity-90 transition"
         >
           ANONIX<span className="text-[#f59e0b]">.</span>
