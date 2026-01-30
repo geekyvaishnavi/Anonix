@@ -10,7 +10,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
             email,
             password,
             options: {
-                data: { username } // This is sent to your SQL trigger
+                data: { username } 
             }
         })
 
@@ -59,7 +59,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
 
         const token = authHeader.replace('Bearer ', '')
 
-        // This tells Supabase to invalidate the current session
+        
         const { error } = await supabase.auth.signOut()
 
         if (error) {
