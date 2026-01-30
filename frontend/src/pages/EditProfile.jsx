@@ -4,7 +4,7 @@ import { ArrowLeft, Save, User as UserIcon, Camera } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { apiRequest } from "../utils/api";
-import { supabase } from "../lib/supabase";
+
 
 export default function EditProfile() {
   const [displayName, setDisplayName] = useState("");
