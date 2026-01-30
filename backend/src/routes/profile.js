@@ -30,13 +30,13 @@ export const profileRoutes = new Elysia().get(
             created_at
         )
     `,
-      ) // Removed the !message_id to keep the key name simple: "replies"
+      ) 
       .eq("recipient_id", profile.id)
       .eq("status", "answered")
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Supabase Error:", error); // Check your server console for this!
+      console.error("Supabase Error:", error); 
     }
 
     return { profile, feed: feed || [] };
