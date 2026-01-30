@@ -8,7 +8,7 @@ export const authPlugin = new Elysia()
             secret: process.env.JWT_SECRET,
         })
     )
-    // Derive user from auth_token cookie
+    
     .derive(async ({ jwt, cookie }) => {
         const authToken = cookie.auth_token?.value;
 
