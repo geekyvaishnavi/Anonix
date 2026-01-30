@@ -2,12 +2,11 @@ import { Elysia, t } from 'elysia'
 import { supabase } from '../db/supabase.js'
 
 export const dashboardRoutes = new Elysia({ prefix: '/dashboard' })
-   // user data
+  // Fetch current user profile
   .get('/me', async ({ request, set }) => {
     const authHeader = request.headers.get('Authorization')
     const token = authHeader?.split(' ')[1]
 
-    // 1. Get user from Supabase Auth
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
     if (authError || !user) {
@@ -15,10 +14,9 @@ export const dashboardRoutes = new Elysia({ prefix: '/dashboard' })
       return { error: "Unauthorized" }
     }
 
-    // 2. Fetch the actual profile data (display_name, username) from your profiles table
     const { data: profile, error: profileError } = await supabase
-      .from('profiles') // or whatever your table name is
-      .select('username, display_name','pfp_url')
+      .from('profiles')
+      .select('username, display_name, pfp_url, bio')
       .eq('id', user.id)
       .single()
 
@@ -30,20 +28,17 @@ export const dashboardRoutes = new Elysia({ prefix: '/dashboard' })
     return profile
   })
 
-  // 1. Get Private Inbox 
- // 1. Get Private Inbox (Corrected with Joins)
+  // Get Private Inbox with associated replies
   .get('/inbox', async ({ request, set }) => {
     const authHeader = request.headers.get('Authorization')
     const token = authHeader?.split(' ')[1]
 
-    // Verify User
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     if (authError || !user) {
       set.status = 401
       return { error: "Unauthorized" }
     }
 
-    // Fetch Messages joined with their replies
     const { data, error } = await supabase
       .from('messages')
       .select(`
@@ -52,7 +47,7 @@ export const dashboardRoutes = new Elysia({ prefix: '/dashboard' })
           reply_text,
           created_at
         )
-      `) // The magic happens here: fetching the linked reply data
+      `)
       .eq('recipient_id', user.id)
       .order('created_at', { ascending: false })
 
@@ -64,30 +59,29 @@ export const dashboardRoutes = new Elysia({ prefix: '/dashboard' })
     return data
   })
 
-  // Get a single message for the Answer page
-  // Get a single message for the Answer page
-.get('/message/:id', async ({ params, set }) => {
-  const { data, error } = await supabase
-    .from('messages')
-    .select(`
-      *,
-      replies (
-        reply_text,
-        created_at
-      )
-    `) // ADD THIS to see the reply on the answer page too
-    .eq('id', params.id)
-    .single()
+  // Get a single message and its reply for the Answer page
+  .get('/message/:id', async ({ params, set }) => {
+    const { data, error } = await supabase
+      .from('messages')
+      .select(`
+        *,
+        replies (
+          reply_text,
+          created_at
+        )
+      `)
+      .eq('id', params.id)
+      .single()
 
-  if (error || !data) {
-    set.status = 404
-    return { error: "Message not found" }
-  }
+    if (error || !data) {
+      set.status = 404
+      return { error: "Message not found" }
+    }
 
-  return data
-})
+    return data
+  })
 
-  // 2. Update Status (Archive/Unarchive)
+  // Update Message Status 
   .patch('/message/:id/status', async ({ params, body }) => {
     const { error } = await supabase
       .from('messages')
@@ -99,7 +93,7 @@ export const dashboardRoutes = new Elysia({ prefix: '/dashboard' })
     body: t.Object({ status: t.String() })
   })
 
-  // 3. Delete Message
+  // Delete Message
   .delete('/message/:id', async ({ params }) => {
     const { error } = await supabase
       .from('messages')
