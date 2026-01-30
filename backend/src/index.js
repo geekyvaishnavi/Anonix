@@ -25,7 +25,7 @@ const app = new Elysia()
     .use(messageRoutes)
     .use(profileRoutes)
 
-    // The authPlugin acts as a gatekeeper for everything defined below it
+    //authPlugin 
     .guard({}, (app) => 
         app
             .use(authPlugin) 
