@@ -10,9 +10,10 @@ import { authPlugin } from './plugins/auth.js'
 
 const app = new Elysia()
   .use(cors({
-    origin: 'https://anonix-eight.vercel.app',
-    credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization']
+   origin: "https://anonix-eight.vercel.app",
+   credentials: true,
+   allowedHeaders: ["Content-Type", "Authorization"],
+   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
   }))
 
   .get('/', () => ({
