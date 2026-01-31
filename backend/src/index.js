@@ -16,6 +16,10 @@ const app = new Elysia()
    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
   }))
 
+   // HANDLE PREFLIGHT
+  .options("*", () => new Response(null, { status: 204 }))
+
+
   .get('/', () => ({
     status: 'online',
     app: 'Anonix app',
