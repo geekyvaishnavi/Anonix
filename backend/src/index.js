@@ -17,7 +17,7 @@ const app = new Elysia()
 
   .get('/', () => ({
     status: 'online',
-    app: 'Sayout Clone API',
+    app: 'Anonix app',
     runtime: 'Bun'
   }))
 
