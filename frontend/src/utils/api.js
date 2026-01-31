@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export const apiRequest = async (endpoint, options = {}) => {
     const token = localStorage.getItem('jwt_token');
@@ -15,14 +15,12 @@ export const apiRequest = async (endpoint, options = {}) => {
     const config = {
         ...options,
         headers,
-        // Important: Use 'include' if using Cookies, otherwise default is fine for JWT
-        credentials: 'same-origin', 
+        // credentials: 'include',   // using local storage
     };
 
     try {
         const response = await fetch(`${BASE_URL}${endpoint}`, config);
         
-        // Handle 401 Unauthorized (e.g., token expired)
         if (response.status === 401) {
             localStorage.removeItem('jwt_token');
             window.location.href = '/login';
