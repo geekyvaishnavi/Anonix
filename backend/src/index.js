@@ -11,7 +11,7 @@ import { authPlugin } from './plugins/auth.js'
 const app = new Elysia()
   .use(cors({
    origin: 'https://anonix-eight.vercel.app',
-   credentials: false,
+   credentials: true,
    allowedHeaders: ["Content-Type", "Authorization"],
    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
   }))
@@ -47,8 +47,8 @@ const app = new Elysia()
   })
 
  .listen({
-    port: process.env.PORT || 3000,
+    port: process.env.PORT || 8080,
     hostname: '0.0.0.0'
   })
 
-console.log(`Backend running on port ${process.env.PORT || 3000}`);
+console.log(`Backend running on port ${process.env.PORT || 8080}`);
