@@ -13,7 +13,7 @@ import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
 import AnswerMessage from "./pages/AnswerMessage";
 import PublicProfile from "./pages/PublicProfile";
-import EditProfile from "./pages/EditProfile";
+
 
 export default function App() {
   return (
