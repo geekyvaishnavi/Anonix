@@ -9,12 +9,19 @@ import { editRoutes } from './routes/edit.js'
 import { authPlugin } from './plugins/auth.js'
 
 const app = new Elysia()
-  .use(cors({
-   origin: 'https://anonix-eight.vercel.app',
-   credentials: true,
-   allowedHeaders: ["Content-Type", "Authorization"],
-   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-  }))
+ .use(
+  cors({
+    origin: (origin) =>
+      origin === 'https://anonix-eight.vercel.app' ||
+      origin === 'http://localhost:5173',
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+  })
+)
+
+.options('*', () => new Response(null, { status: 204 }))
+
 
   
   .get('/', () => ({
