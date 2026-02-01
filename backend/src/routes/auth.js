@@ -3,10 +3,7 @@ import { supabase } from "../db/supabase.js";
 
 export const authRoutes = new Elysia({ prefix: "/auth" })
 
-  .options("*", ({ set }) => {
-    set.status = 204;
-    return null;
-  })
+  
 
   // Register a new user
   .post(

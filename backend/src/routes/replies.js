@@ -3,10 +3,7 @@ import { supabase } from "../db/supabase.js";
 
 export const replyRoutes = new Elysia({ prefix: "/replies" })
 
-  .options("*", ({ set }) => {
-    set.status = 204;
-    return null;
-  })
+  
 
   .post(
     "/send",

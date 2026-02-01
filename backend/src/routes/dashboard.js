@@ -3,11 +3,8 @@ import { supabase } from "../db/supabase.js";
 
 export const dashboardRoutes = new Elysia({ prefix: "/dashboard" })
 
-  .options("*", ({ set }) => {
-    set.status = 204;
-    return null;
-  })
   
+
   // Fetch current user profile
   .get("/me", async ({ request, set }) => {
     const authHeader = request.headers.get("Authorization");

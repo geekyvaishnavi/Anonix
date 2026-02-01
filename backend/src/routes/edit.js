@@ -3,10 +3,7 @@ import { supabase } from "../db/supabase";
 
 export const editRoutes = new Elysia({ prefix: "/user" })
 
-  .options("*", ({ set }) => {
-    set.status = 204;
-    return null;
-  })
+ 
 
   .put(
     "/profile/update",
