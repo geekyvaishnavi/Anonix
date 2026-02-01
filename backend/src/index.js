@@ -12,7 +12,9 @@ const app = new Elysia()
 
   .onRequest(({ request , set }) => {
     if(request.method === "OPTIONS"){
-        set.status = 204;
+      set.headers["Access-Control-Allow-Origin"] =
+      request.headers.get("origin") ?? "*";
+      set.status = 204;
         return;
     }
     console.log(
