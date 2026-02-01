@@ -25,7 +25,7 @@ const app = new Elysia()
 
   .use(
     cors({
-      origin: (origin) => true,
+      origin: "https://anonix-production.up.railway.app/",
       allowedHeaders: ["Content-Type", "Authorization"],
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     }),
