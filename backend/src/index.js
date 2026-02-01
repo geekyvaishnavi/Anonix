@@ -10,7 +10,11 @@ import { authPlugin } from "./plugins/auth.js";
 
 const app = new Elysia()
 
-  .onRequest(({ request }) => {
+  .onRequest(({ request , set }) => {
+    if(request.method === "OPTIONS"){
+        set.status = 204;
+        return;
+    }
     console.log(
       `[REQ] ${request.method} ${new URL(request.url).pathname}`,
       "Origin:",
