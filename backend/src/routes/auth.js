@@ -1,71 +1,79 @@
-import { Elysia, t } from 'elysia'
-import { supabase } from '../db/supabase.js'
+import { Elysia, t } from "elysia";
+import { supabase } from "../db/supabase.js";
 
-export const authRoutes = new Elysia({ prefix: '/auth' })
-    // Register a new user
-    .post('/signup', async ({ body, set }) => {
-        const { email, password, username } = body
-        
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: { username } 
-            }
-        })
+export const authRoutes = new Elysia({ prefix: "/auth" })
 
-        if (error) {
-            set.status = 400
-            return { error: error.message }
-        }
+  .options("*", ({ set }) => {
+    set.status = 204;
+    return null;
+  })
 
-        return { 
-    message: "Account created!", 
-    token: data.session?.access_token, 
-    user: data.user 
-}
-    }, {
-        body: t.Object({
-            email: t.String(),
-            password: t.String(),
-            username: t.String()
-        })
-    })
+  // Register a new user
+  .post(
+    "/signup",
+    async ({ body, set }) => {
+      const { email, password, username } = body;
 
-    // Login and get a JWT token
-    .post('/login', async ({ body, set }) => {
-        const { data, error } = await supabase.auth.signInWithPassword(body)
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { username },
+        },
+      });
 
-        if (error) {
-            set.status = 401
-            return { error: "Login failed" }
-        }
+      if (error) {
+        set.status = 400;
+        return { error: error.message };
+      }
 
-        return {
-            token: data.session.access_token,
-            user: data.user
-        }
-    })
+      return {
+        message: "Account created!",
+        token: data.session?.access_token,
+        user: data.user,
+      };
+    },
+    {
+      body: t.Object({
+        email: t.String(),
+        password: t.String(),
+        username: t.String(),
+      }),
+    },
+  )
 
+  // Login and get a JWT token
+  .post("/login", async ({ body, set }) => {
+    const { data, error } = await supabase.auth.signInWithPassword(body);
 
-    //logout
-    .post('/logout', async ({ request, set }) => {
-        const authHeader = request.headers.get('authorization')
-        
-        if (!authHeader) {
-            set.status = 401
-            return { error: "No session found" }
-        }
+    if (error) {
+      set.status = 401;
+      return { error: "Login failed" };
+    }
 
-        const token = authHeader.replace('Bearer ', '')
+    return {
+      token: data.session.access_token,
+      user: data.user,
+    };
+  })
 
-        
-        const { error } = await supabase.auth.signOut()
+  //logout
+  .post("/logout", async ({ request, set }) => {
+    const authHeader = request.headers.get("authorization");
 
-        if (error) {
-            set.status = 400
-            return { error: error.message }
-        }
+    if (!authHeader) {
+      set.status = 401;
+      return { error: "No session found" };
+    }
 
-        return { message: "Logged out successfully" }
-    })
+    const token = authHeader.replace("Bearer ", "");
+
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      set.status = 400;
+      return { error: error.message };
+    }
+
+    return { message: "Logged out successfully" };
+  });
