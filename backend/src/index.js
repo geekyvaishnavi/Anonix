@@ -13,6 +13,7 @@ const app = new Elysia()
   cors({
     origin: (origin) =>
       origin === 'https://anonix-eight.vercel.app' ||
+      origin === 'http://anonix-eight.vercel.app' ||
       origin === 'http://localhost:5173',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
