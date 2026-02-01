@@ -34,7 +34,7 @@ const app = new Elysia()
 
   .options("*", ({ set }) => {
     set.headers["Access-Control-Allow-Origin"] =
-      "https://anonix-eight.vercel.app";
+      "https://anonix-eight.vercel.app/";
     set.headers["Access-Control-Allow-Credentials"] = "true";
     set.headers["Access-Control-Allow-Methods"] =
       "GET,POST,PUT,PATCH,DELETE,OPTIONS";
