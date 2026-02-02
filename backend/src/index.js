@@ -10,7 +10,13 @@ import { authPlugin } from "./plugins/auth.js";
 
 const app = new Elysia()
 
-  .onRequest(({ request }) => {
+  .onRequest(({ request , set }) => {
+    if(request.method === "OPTIONS"){
+      set.headers["Access-Control-Allow-Origin"] =
+      request.headers.get("origin") ?? "*";
+      set.status = 204;
+        return;
+    }
     console.log(
       `[REQ] ${request.method} ${new URL(request.url).pathname}`,
       "Origin:",
@@ -25,22 +31,13 @@ const app = new Elysia()
 
   .use(
     cors({
-      origin: (origin) => true,
-      credentials: true,
+      origin: true,
       allowedHeaders: ["Content-Type", "Authorization"],
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     }),
   )
 
-  .options("*", ({ set }) => {
-    set.headers["Access-Control-Allow-Origin"] =
-      "https://anonix-eight.vercel.app/";
-    set.headers["Access-Control-Allow-Credentials"] = "true";
-    set.headers["Access-Control-Allow-Methods"] =
-      "GET,POST,PUT,PATCH,DELETE,OPTIONS";
-    set.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
-    return new Response(null, { status: 204 });
-  })
+
 
   .get("/", () => ({
     status: "online",
