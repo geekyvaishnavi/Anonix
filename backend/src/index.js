@@ -24,13 +24,7 @@ const app = new Elysia()
     })
   )
 
-  
-  .all("/*", ({ request, set }) => {
-    if (request.method === "OPTIONS") {
-      set.status = 204;
-      return "";
-    }
-  })
+ 
 
 
   .onRequest(({ request }) => {
