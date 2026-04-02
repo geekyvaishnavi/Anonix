@@ -1,5 +1,6 @@
 import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
+
 import { authRoutes } from "./routes/auth.js";
 import { messageRoutes } from "./routes/messages.js";
 import { replyRoutes } from "./routes/replies.js";
@@ -10,49 +11,58 @@ import { authPlugin } from "./plugins/auth.js";
 
 const app = new Elysia()
 
-  .onRequest(({ request , set }) => {
-    if(request.method === "OPTIONS"){
-      set.headers["Access-Control-Allow-Origin"] =
-      request.headers.get("origin") ?? "*";
+ 
+  .use(
+    cors({
+      origin: [
+        "http://localhost:5173",
+        "https://anonix-eight.vercel.app"
+      ],
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"]
+    })
+  )
+
+  
+  .all("/*", ({ request, set }) => {
+    if (request.method === "OPTIONS") {
       set.status = 204;
-        return;
+      return "";
     }
+  })
+
+
+  .onRequest(({ request }) => {
     console.log(
       `[REQ] ${request.method} ${new URL(request.url).pathname}`,
       "Origin:",
-      request.headers.get("origin"),
+      request.headers.get("origin")
     );
   })
 
-  // Optional but VERY useful
+  
   .onError(({ error, request }) => {
     console.error(`[ERR] ${request.method} ${request.url}`, error);
   })
 
-  .use(
-    cors({
-      origin: true,
-      allowedHeaders: ["Content-Type", "Authorization"],
-      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    }),
-  )
-
-
-
+  // Health route
   .get("/", () => ({
     status: "online",
     app: "Anonix app",
     runtime: "Bun",
   }))
 
+  // Routes
   .use(authRoutes)
   .use(messageRoutes)
   .use(profileRoutes)
 
   .guard({}, (app) =>
-    app.use(authPlugin).use(dashboardRoutes).use(replyRoutes).use(editRoutes),
+    app.use(authPlugin).use(dashboardRoutes).use(replyRoutes).use(editRoutes)
   )
 
+  // Final error handler
   .onError(({ code, error, set }) => {
     if (code === "NOT_FOUND") {
       set.status = 404;
