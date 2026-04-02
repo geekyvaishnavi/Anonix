@@ -1,25 +1,28 @@
 {
   "name": "backend",
   "version": "1.0.50",
+  "type": "module",
+  "private": true,
+
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.js",
-    "start": "bun run src/index.js"
+    "start": "bun run src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+
   "dependencies": {
     "@elysiajs/cors": "^1.4.1",
     "@elysiajs/jwt": "^1.4.0",
     "@supabase/supabase-js": "^2.89.0",
-    "elysia": "^1.4.19",
-    "@sinclair/typebox": "^0.32.0"
+    "elysia": "^1.4.28",
+    "@sinclair/typebox": "^0.34.0"
   },
+
   "devDependencies": {
     "bun-types": "latest",
     "@types/bun": "latest"
   },
-  "module": "src/index.js",
-  "type": "module",
-  "private": true,
+
   "peerDependencies": {
     "typescript": "^5"
   }
